@@ -1,0 +1,87 @@
+// Define pins for the DC vibrator motors
+const int vibratorPins[2][3] = {
+  {2, 3, 4},  // Pins for the first row of vibrators
+  {5, 6, 7}   // Pins for the second row of vibrators
+};
+
+// Define Braille characters
+const char braille[26][6] = {
+  {'O', 'O', 'O', 'O', 'O', 'O'},  // A
+  {'O', 'O', 'O', 'O', 'O', '.'},  // B
+  {'O', 'O', 'O', 'O', '.', 'O'},  // C
+  {'O', 'O', 'O', 'O', '.', '.'},  // D
+  {'O', 'O', 'O', '.', 'O', 'O'},  // E
+  {'O', 'O', 'O', '.', 'O', '.'},  // F
+  {'O', 'O', 'O', '.', '.', 'O'},  // G
+  {'O', 'O', 'O', '.', '.', '.'},  // H
+  {'O', 'O', '.', 'O', 'O', 'O'},  // I
+  {'O', 'O', '.', 'O', 'O', '.'},  // J
+  {'O', 'O', '.', 'O', '.', 'O'},  // K
+  {'O', 'O', '.', 'O', '.', '.'},  // L
+  {'O', 'O', '.', '.', 'O', 'O'},  // M
+  {'O', 'O', '.', '.', 'O', '.'},  // N
+  {'O', 'O', '.', '.', '.', 'O'},  // O
+  {'O', '.', 'O', 'O', 'O', 'O'},  // P
+  {'O', '.', 'O', 'O', 'O', '.'},  // Q
+  {'O', '.', 'O', 'O', '.', 'O'},  // R
+  {'O', '.', 'O', 'O', '.', '.'},  // S
+  {'O', '.', 'O', '.', 'O', 'O'},  // T
+  {'O', '.', 'O', '.', 'O', '.'},  // U
+  {'O', '.', 'O', '.', '.', 'O'},  // V
+  {'.', 'O', 'O', 'O', 'O', 'O'},  // W
+  {'.', 'O', 'O', 'O', 'O', '.'},  // X
+  {'.', 'O', 'O', 'O', '.', 'O'},  // Y
+  {'.', 'O', 'O', 'O', '.', '.'}   // Z
+};
+
+// Function to control vibrator motors based on Braille code
+void outputBraille(char letter) {
+  int index = letter - 'A'; // Convert letter to array index
+  if (index < 0 || index > 25) return; // Check if letter is valid
+  for (int i = 0; i < 3; i++) {
+    if (braille[index][i] == 'O') {
+      digitalWrite(vibratorPins[0][i], HIGH); // Activate first row vibrator
+    } else {
+      digitalWrite(vibratorPins[0][i], LOW);
+    }
+  }
+  for (int i = 0; i < 3; i++) {
+    if (braille[index][i+3] == 'O') {
+      digitalWrite(vibratorPins[1][i], HIGH); // Activate second row vibrator
+    } else {
+      digitalWrite(vibratorPins[1][i], LOW);
+    }
+  }
+  delay(1000); // Wait for 1 second
+}
+
+void allvibratoroff() {
+  // Initialize vibrator pins as outputs
+  for (int i = 0; i < 2; i++) {
+    for (int j = 0; j < 3; j++) {
+      digitalWrite (vibratorPins[i][j], LOW);
+    }
+  }
+}
+
+
+void setup() {
+  // Initialize vibrator pins as outputs
+  for (int i = 0; i < 2; i++) {
+    for (int j = 0; j < 3; j++) {
+      pinMode(vibratorPins[i][j], OUTPUT);
+    }
+  }
+  Serial.begin(9600); // Start serial communication
+}
+
+void loop() {
+  if (Serial.available() > 0) { // Check if data is available to read
+    char letter = Serial.read(); // Read the incoming byte
+    if (letter >= 'A' && letter <= 'Z') {
+      outputBraille(letter); // Convert and output Braille for the received letter
+      allvibratoroff(); 
+      delay(500);// Pause for 1 second between letters
+    }
+  }
+}
